@@ -71,15 +71,11 @@ class JSONable:
                 else:
                     attributes[key] = dictionary[key]
 
-        print(attributes)
         try:
             model = cls.objects.get(id = attributes.get('id'))
-            print(cls)
             cls.objects.filter(id = attributes['id']).update(**attributes)
-            print(json.dumps(cls.objects.filter(id = attributes['id'])[0].title))
             model = cls.objects.get(id = attributes.get('id'))
         except ObjectDoesNotExist:
-            print('does not exist')
             model = cls(**attributes)
             model.save()
         for key in foreign_keys:

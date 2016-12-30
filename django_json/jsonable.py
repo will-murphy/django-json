@@ -43,6 +43,7 @@ class JSONable:
             json_attributes = None,
             whitelist = [],
             blacklist = []):
+
         if json_attributes == None:
             json_attributes = cls.json_attributes
         json_attributes = list(
@@ -54,13 +55,7 @@ class JSONable:
             if key[-4:] == '_set' and \
                key[:-4] + 's' in dictionary:
                 key_name = key[:-4] + 's'
-                if type(cls.__dict__[key].rel) is ManyToManyRel:
-                    RelatedModel = cls.__dict__[key].rel.model
-                else:
-                    RelatedModel = cls.__dict__[key].rel.related_model
-                foreign_keys[key] = (
-                    RelatedModel,
-                    dictionary[key_name])
+                foreign_keys[key] = (cls.__dict__[key].rel, dictionary[key])
             if key in dictionary or \
                (key[-5:] == '_json' and 
                 key[:-5] in dictionary):
@@ -71,6 +66,7 @@ class JSONable:
                 else:
                     attributes[key] = dictionary[key]
 
+        # Create model
         try:
             model = cls.objects.get(id = attributes.get('id'))
             cls.objects.filter(id = attributes['id']).update(**attributes)
@@ -78,11 +74,21 @@ class JSONable:
         except ObjectDoesNotExist:
             model = cls(**attributes)
             model.save()
+
+        # Add relationships
         for key in foreign_keys:
-            (RelatedModel, model_jsons) = foreign_keys[key]
-            getattr(model, key).set([
+            (rel, related_model_jsons) = foreign_keys[key]
+            if type(rel) is ManyToManyRel:
+                RelatedModel = rel.model
+            else:
+                RelatedModel = rel.related_model
+            related_models = [
                 RelatedModel.from_json_dict(model_json)
-                for model_json in model_jsons])
+                for model_json in model_jsons]
+            if type(rel) is ManyToManyRel:
+                getattr(model, key).add(related_models)
+            else:
+                getattr(model, key).set(related_models)
         return model
 
     def as_json_dict(

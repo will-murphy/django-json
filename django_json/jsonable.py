@@ -55,7 +55,7 @@ class JSONable:
             if key[-4:] == '_set' and \
                key[:-4] + 's' in dictionary:
                 key_name = key[:-4] + 's'
-                foreign_keys[key] = (cls.__dict__[key].rel, dictionary[key])
+                foreign_keys[key] = (cls.__dict__[key].rel, dictionary[key_name])
             if key in dictionary or \
                (key[-5:] == '_json' and 
                 key[:-5] in dictionary):
@@ -84,11 +84,8 @@ class JSONable:
                 RelatedModel = rel.related_model
             related_models = [
                 RelatedModel.from_json_dict(model_json)
-                for model_json in model_jsons]
-            if type(rel) is ManyToManyRel:
-                getattr(model, key).add(related_models)
-            else:
-                getattr(model, key).set(related_models)
+                for model_json in related_model_jsons]
+            getattr(model, key).set(related_models)
         return model
 
     def as_json_dict(

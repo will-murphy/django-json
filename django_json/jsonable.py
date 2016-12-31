@@ -35,6 +35,16 @@ from django.db.models import (
     ManyToManyRel,
 )
 
+# In Postgres, sometimes objects returned by "[model]_set" aren't ordered
+# according to Model.Meta.ordering.
+def order_by_default(query):
+    if hasattr(query.model, 'Meta') and \
+       hasattr(query.model.Meta, 'ordering') and \
+       0 < len(query.model.Meta):
+        return query.order_by(*query.model.Meta.ordering)
+    else:
+        return query
+
 class JSONable:
     @classmethod
     def from_json_dict(
@@ -102,17 +112,17 @@ class JSONable:
         dictionary = {}
         for key in json_attributes:
             if key[-4:] == '_set':
+                objects = order_by_default(getattr(self, key))
                 if include_deleted:
-                    objects = getattr(self, key).all()
+                    all_objects = objects.all()
                 else:
-                    objects = getattr(self, key)
                     if hasattr(objects.model, 'deleted'):
                         objects = objects.filter(deleted = False)
-                    objects = objects.all()
+                    all_objects = objects.all()
                 dictionary[key[:-4] + 's'] = list(map(
                     (lambda thing: thing.as_json_dict(
                         include_deleted = include_deleted)),
-                    objects))
+                    all_objects))
             else:
                 if key[-5:] == '_json':
                     key_name = key[:-5]
@@ -153,9 +163,9 @@ class JSONable:
             blacklist = [],
             include_deleted = False):
         if include_deleted or not hasattr(self, 'undeleted'):
-            objects = self.objects.all()
+            objects = order_by_default(self.objects).all()
         else:
-            objects = self.undeleted().all()
+            objects = order_by_default(self.undeleted()).all()
         return [ 
             jsonable.as_json_dict(
                 json_attributes,

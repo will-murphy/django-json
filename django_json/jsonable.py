@@ -40,7 +40,7 @@ from django.db.models import (
 def order_by_default(query):
     if hasattr(query.model, 'Meta') and \
        hasattr(query.model.Meta, 'ordering') and \
-       0 < len(query.model.Meta):
+       0 < len(query.model.Meta.ordering):
         return query.order_by(*query.model.Meta.ordering)
     else:
         return query

@@ -106,7 +106,6 @@ class JSONable:
             related_models = [
                 RelatedModel.from_json_dict(model_json)
                 for model_json in related_model_jsons]
-            print(related_models)
             getattr(model, key).set(related_models)
         return model
 

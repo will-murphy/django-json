@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'django-json',
   packages = ['django_json'], # this must be the same as the name above
-  version = '0.13',
+  version = '0.14',
   description = 'Django-JSON conversion',
   author = 'Will Tennien-Murphy',
   author_email = 'wtmurp2@gmail.com',

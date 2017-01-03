@@ -84,7 +84,11 @@ class JSONable:
             model = cls.objects.get(id = attributes['id'])
         except KeyError:
             if cls == User and 'username' in attributes:
-                model = cls.objects.filter(username = attributes['username'])
+                try:
+                    model = cls.objects.get(username = attributes['username'])
+                except ObjectDoesNotExist:
+                    model = cls(**attributes)
+                    model.save()
             else:
                 model = cls(**attributes)
                 model.save()

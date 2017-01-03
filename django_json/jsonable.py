@@ -86,7 +86,8 @@ class JSONable:
             if cls == User and 'username' in attributes:
                 model = cls.objects.filter(username = attributes['username'])
             else:
-                raise ObjectDoesNotExist
+                model = cls(**attributes)
+                model.save()
         except ObjectDoesNotExist:
             model = cls(**attributes)
             model.save()

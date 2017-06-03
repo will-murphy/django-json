@@ -211,3 +211,15 @@ class JSONable:
                 for item in thing ]
         else:
             return thing
+
+def filter_ids(thing):
+    if type(thing) == list:
+        return list(map(remove_ids, thing))
+    elif type(thing) == dict:
+        return {
+            key: thing[key]
+            for key in thing
+            if key[-3:] != '_id' and key != 'id'
+        }
+    else:
+        return thing

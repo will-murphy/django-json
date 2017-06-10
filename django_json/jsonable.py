@@ -214,12 +214,18 @@ class JSONable:
 
 def filter_ids(thing):
     if type(thing) == list:
-        return list(map(remove_ids, thing))
+        return list(map(filter_ids, thing))
     elif type(thing) == dict:
         return {
-            key: thing[key]
+            key: filter_ids(thing[key])
             for key in thing
             if key[-3:] != '_id' and key != 'id'
         }
     else:
         return thing
+
+def copy(model):
+    return type(model).from_json_dict(filter_ids(model.as_json_dict()))
+
+def copies(models):
+    return list(map(copy, models))

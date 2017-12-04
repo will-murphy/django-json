@@ -140,11 +140,19 @@ class JSONable:
                     dictionary[key_name] = \
                         json.loads(self.__dict__[key_name + '_json_string'])
                 else:
-                    dictionary[key] = self.__dict__[key]
+                    dictionary[key] = getattr(self, key)
 
-                    if type(dictionary[key]) == ImageField:
-                        # TODO
-                        pass
+                    if isinstance(dictionary[key], Model):
+                        dictionary[key] = \
+                            dictionary[key].as_json_dict()
+
+                    if isinstance(
+                        dictionary[key],
+                        django.db.models.fields.files.ImageFieldFile):
+                    
+                        file = dictionary[key]
+                        del dictionary[key]
+                        dictionary[key + '_url'] = file.url
         
         # Convert datetimes to strings
         for attribute in dictionary.keys():

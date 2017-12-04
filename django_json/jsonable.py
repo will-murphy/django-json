@@ -5,6 +5,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import IntegrityError
+import django.db.models.fields.files.ImageFieldFile
 from django.db.models import (
     Model,
     # Model Types
@@ -149,7 +150,7 @@ class JSONable:
                     if isinstance(
                         dictionary[key],
                         django.db.models.fields.files.ImageFieldFile):
-                    
+
                         file = dictionary[key]
                         del dictionary[key]
                         dictionary[key + '_url'] = file.url
